@@ -1,3 +1,4 @@
+import argparse
 import json
 import pathlib
 
@@ -5,14 +6,20 @@ from datasets import load_dataset
 
 from polyglyph.chunking import chunk_text
 
-SNAPSHOT = "20231101"   # check the dataset page for the current snapshot names
+SNAPSHOT = "20231101"  # check the dataset page for the current snapshot names
 LANGS = {"hi": "भारत", "mr": "भारत", "en": "India"}
-MAX_DOCS = 600
 MIN_CHARS = 1500
 
 
 def main() -> None:
-    out_dir = pathlib.Path("data/processed")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--size", type=int, default=200, help="words per chunk")
+    parser.add_argument("--overlap", type=int, default=40, help="overlapping words")
+    parser.add_argument("--max-docs", type=int, default=600, help="articles per language")
+    parser.add_argument("--out-dir", default="data/processed")
+    args = parser.parse_args()
+
+    out_dir = pathlib.Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     stats = {}
     with open(out_dir / "chunks.jsonl", "w", encoding="utf-8") as f:
@@ -25,7 +32,7 @@ def main() -> None:
                 text = row["text"]
                 if len(text) < MIN_CHARS or keyword not in text:
                     continue
-                for i, piece in enumerate(chunk_text(text)):
+                for i, piece in enumerate(chunk_text(text, args.size, args.overlap)):
                     record = {
                         "chunk_id": f"{lang}-{row['id']}-{i}",
                         "doc_id": f"{lang}-{row['id']}",
@@ -36,7 +43,7 @@ def main() -> None:
                     f.write(json.dumps(record, ensure_ascii=False) + "\n")
                     chunks += 1
                 docs += 1
-                if docs >= MAX_DOCS:
+                if docs >= args.max_docs:
                     break
             stats[lang] = {"docs": docs, "chunks": chunks}
     print(stats)
