@@ -17,6 +17,7 @@ def main() -> None:
     parser.add_argument("--overlap", type=int, default=40, help="overlapping words")
     parser.add_argument("--max-docs", type=int, default=600, help="articles per language")
     parser.add_argument("--out-dir", default="data/processed")
+    parser.add_argument("--min-mentions", type=int, default=1, help="min keyword occurrences")
     args = parser.parse_args()
 
     out_dir = pathlib.Path(args.out_dir)
@@ -30,7 +31,7 @@ def main() -> None:
             docs = chunks = 0
             for row in ds:
                 text = row["text"]
-                if len(text) < MIN_CHARS or keyword not in text:
+                if len(text) < MIN_CHARS or text.count(keyword) < args.min_mentions:
                     continue
                 for i, piece in enumerate(chunk_text(text, args.size, args.overlap)):
                     record = {
