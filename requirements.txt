@@ -1,3 +1,6 @@
 datasets
 pytest
 ruff
+sentence-transformers
+faiss-cpu
+numpy

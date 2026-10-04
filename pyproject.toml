@@ -2,7 +2,7 @@
 name = "polyglyph"
 version = "0.1.0"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["numpy", "faiss-cpu"]
 
 [build-system]
 requires = ["setuptools>=68"]
